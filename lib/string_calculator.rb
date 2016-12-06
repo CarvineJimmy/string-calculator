@@ -4,10 +4,10 @@ module StringCalculator
   def StringCalculator.add(input)
     return 0 if input.length == 0
 
-    delimiter = StringCalculator.determineDelimiter(input)
+    delimiters = StringCalculator.determineDelimiters(input)
     input = StringCalculator.removePreamble(input)
 
-    split = StringCalculator.splitOnSeparators(input, delimiter)
+    split = StringCalculator.splitOnDelimiters(input, delimiters)
     return nil if !StringCalculator.isArrayOnlyNumbers(split)
     allNumbers = split.map(&:to_i)
 
@@ -19,8 +19,8 @@ module StringCalculator
   private
   PREAMBLE_REGEX = /^\/\/\[.+\]\n/m
 #Should this also remove the delimiter and return the new string?
-  def StringCalculator.determineDelimiter(string)
-    return string.split(/\[(.*?)\]/)[1] if string =~ PREAMBLE_REGEX
+  def StringCalculator.determineDelimiters(string)
+    return string.scan(/\[(.*?)\]/).map { | delimiterArray | delimiterArray[0] } if string =~ PREAMBLE_REGEX
     return nil
   end
 
@@ -29,17 +29,15 @@ module StringCalculator
     return string
   end
 
-  def StringCalculator.splitOnSeparators(string, separator)
-    if separator == nil
-      separators = [",", "\n"]
-    else
-      separators = [separator]
+  def StringCalculator.splitOnDelimiters(string, delimiters)
+    if delimiters == nil
+      delimiters = [",", "\n"]
     end
-    string.split(StringCalculator.separatorsToRegex(separators))
+    string.split(StringCalculator.delimitersToRegex(delimiters))
   end
 
-  def StringCalculator.separatorsToRegex(separatorArray)
-    return Regexp.new(separatorArray.map { | separator | Regexp.escape(separator) }.join('|'),  Regexp::MULTILINE)
+  def StringCalculator.delimitersToRegex(delimiters)
+    return Regexp.new(delimiters.map { | delimiter | Regexp.escape(delimiter) }.join('|'),  Regexp::MULTILINE)
   end
 
   def StringCalculator.isArrayOnlyNumbers(input)

@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'string_calculator'
 
 describe StringCalculator do
   it 'has a version number' do
@@ -51,17 +50,21 @@ describe StringCalculator do
     it 'works with a multicharacter delimiter' do
       expect(StringCalculator.add("//[///]\n1///2///3///4///5///6///7///8///9///10")).to eq(55)
     end
+
+    it 'works with multiple delimiters' do
+      expect(StringCalculator.add("//[///][..]\n1///2///3///4..5///6..7///8///9..10")).to eq(55)
+    end
   end
 
-  describe 'splitOnSeparators' do
+  describe 'splitOnDelimiters' do
     it 'splits on comma or \n' do
-      expect(StringCalculator.splitOnSeparators("1\n2,3", nil)).to eq(["1", "2", "3"])
-      expect(StringCalculator.splitOnSeparators("1\n,2,\n3", nil)).to eq(["1", "", "2", "", "3"])
+      expect(StringCalculator.splitOnDelimiters("1\n2,3", nil)).to eq(["1", "2", "3"])
+      expect(StringCalculator.splitOnDelimiters("1\n,2,\n3", nil)).to eq(["1", "", "2", "", "3"])
     end
 
     it 'splits on a custom delimiter' do
-      expect(StringCalculator.splitOnSeparators("1/2/3", "/")).to eq(["1", "2", "3"])
-      expect(StringCalculator.splitOnSeparators("1p2p3", "p")).to eq(["1", "2", "3"])
+      expect(StringCalculator.splitOnDelimiters("1/2/3", ["/"])).to eq(["1", "2", "3"])
+      expect(StringCalculator.splitOnDelimiters("1p2p3", ["p"])).to eq(["1", "2", "3"])
     end
   end
 
@@ -83,27 +86,31 @@ describe StringCalculator do
     end
   end
 
-  describe'determineDelimiter' do
+  describe'determineDelimiters' do
     it 'returns single character delimiter' do
-      expect(StringCalculator.determineDelimiter("//[.]\n")).to eq(".")
+      expect(StringCalculator.determineDelimiters("//[.]\n")).to eq(["."])
     end
 
     it 'returns multicharacter delimiter' do
-      expect(StringCalculator.determineDelimiter("//[...]\n")).to eq("...")
+      expect(StringCalculator.determineDelimiters("//[...]\n")).to eq(["..."])
     end
 
     it 'returns nil when the custom delimiter preamble is missing' do
-      expect(StringCalculator.determineDelimiter("1,2,3,4,5,6,7,8,9,10")).to eq(nil)
+      expect(StringCalculator.determineDelimiters("1,2,3,4,5,6,7,8,9,10")).to eq(nil)
+    end
+
+    it 'returns multiple delimiters' do
+      expect(StringCalculator.determineDelimiters("//[.][//]\n")).to eq([".", "//"])
     end
   end
 
-  describe 'separatorsToRegex' do
-    it 'converts one separator to regex' do
-      expect(StringCalculator.separatorsToRegex(["\n"])).to eq(/\n/m)
+  describe 'delimitersToRegex' do
+    it 'converts one delimiter to regex' do
+      expect(StringCalculator.delimitersToRegex(["\n"])).to eq(/\n/m)
     end
 
-    it 'converts two separator to regex' do
-      expect(StringCalculator.separatorsToRegex([",", "\n"])).to eq(/,|\n/m)
+    it 'converts two delimiters to regex' do
+      expect(StringCalculator.delimitersToRegex([",", "\n"])).to eq(/,|\n/m)
     end
   end
 
